@@ -18,6 +18,27 @@
         const left = 0;
         const up = 0;
         const right = 0;
+
+        const map = [];
+        const scroll = 0;
+        let vy = 0;
+        const end = 0;
+        const zoom = 9;
+        let x = 2;
+        let y = 2;
+        const intro = 24;
+        let enemy = 24;
+        let grounded = 0;
+
+        // Helpers
+
+        const pipe = (x,y) => {
+            for(let Y = 11; Y-- > y;) {
+                map[Y][x] = map[Y][x+1] = 4
+            }
+        }
+
+
         
     </script>
 </body>
