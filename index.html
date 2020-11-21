@@ -31,13 +31,14 @@
         let grounded = 0;
 
         // Helpers
-
+        
+        // This function adds a pipe (id = 4) on the map starting at the given top-left position.
+        // The pipe will be 2px wide and as high as needed to touch the ground at y = 11.
         const pipe = (x,y) => {
-            for(let Y = 11; Y-- > y;) {
+            for(let Y = 11; Y > y; Y--) {
                 map[Y][x] = map[Y][x+1] = 4
             }
         }
-
 
         
     </script>
