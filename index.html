@@ -40,6 +40,7 @@
             }
         }
 
+
         const stair = (y, x, right) => {
             for (Y = 11; Y > y; Y--) {
                 if (right) {
@@ -52,6 +53,25 @@
                     }
                 }
             } 
+        }
+
+        // This function detects and responds to collision between a corner of Mario's pixel and other locks of the map.
+        // The 'up' parameter is set if Mario is jumping and means that the collision that is being checked is between Mario's top and a block above him.
+
+        const collision = (x, y, up) => {
+
+            // ~~ is a double NOT bitwise operator. It is used as a faster substitute for Math.floor() for positive numbers.
+            if (map[~~y]) {
+
+                // If the map actually has a line at the given Y coordinate.
+                // This must be checked because Mario can jump above and fall below the map.
+                if (up && map[~~y][~~x] && map[~~y][~~x] != 2) {
+                    map[~~y][~~x]--, vy = 0;
+                }
+            return map[~~y][~~x];
+
+            }
+
         }
 
         
