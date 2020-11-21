@@ -36,8 +36,22 @@
         // The pipe will be 2px wide and as high as needed to touch the ground at y = 11.
         const pipe = (x,y) => {
             for(let Y = 11; Y > y; Y--) {
-                map[Y][x] = map[Y][x+1] = 4
+                map[Y][x] = map[Y][x+1] = 4;
             }
+        }
+
+        const stair = (y, x, right) => {
+            for (Y = 11; Y > y; Y--) {
+                if (right) {
+                    for (X = x; X < x + Y - y; X++) {
+                        map[Y][X] = map[10][198] = 1;
+                    }
+                } else {
+                    for (X = x; X > x - Y + y; X--) {
+                        map[Y][X] = map[10][198] = 1;
+                    }
+                }
+            } 
         }
 
         
