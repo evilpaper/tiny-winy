@@ -1,3 +1,3 @@
-###### tiny-winy
+# tiny-winy
 
-A tiny winy platform engine
+A tiny winy platform engine.
