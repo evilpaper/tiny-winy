@@ -82,6 +82,12 @@
                 map[i][j] = (i > 10 && ![69, 70, 86, 87, 88, 153, 154].includes(j));
             }
         }
+
+        // Set all the question blocks (id = 3) and brick blocks (id = 1) on the 4th and 8th lines.
+        for(i of[22,94,109,129,130]) map[3][i] = 3;
+        for(i of[80,81,82,83,84,85,86,87,91,92,93,121,122,123,128,131]) map[3][i] = 1;
+        for(i of[8,21,23,78,106,109,112,170]) map[7][i] = 3;
+        for(i of[20,22,24,77,79,94,100,118,129,130,88,89,171]) map[7][i] = map[10][198] = 1;
         
     </script>
 </body>
