@@ -89,6 +89,29 @@
         for(i of[8,21,23,78,106,109,112,170]) map[7][i] = 3;
         for(i of[20,22,24,77,79,94,100,118,129,130,88,89,171]) map[7][i] = map[10][198] = 1;
         
+        // Set all the pipes.
+        pipe(9, 28);
+        pipe(8, 38);
+        pipe(7, 46);
+        pipe(7, 57);
+        pipe(9, 83);
+        pipe(9, 179);
+
+        // Set all the stairs
+        // After the first stair, two pair of stairs have a 1px difference (x = 152 & 153, x = 190 & 191).
+        // This is because those those stairs have a 2px-wide platform on top.
+        // It was simpler to overlap two stairs than adding a column of pixels.
+        stair(6, 138);
+        stair(6, 152);
+        stair(6, 153);
+        stair(2, 190);
+        stair(2, 191);
+        stair(6, 140, 1);
+        stair(6, 155, 1);
+
+
+        
+
     </script>
 </body>
 </html>
