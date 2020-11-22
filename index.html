@@ -31,7 +31,7 @@
         let grounded = 0;
 
         // Helpers
-        
+        // -------
         // This function adds a pipe (id = 4) on the map starting at the given top-left position.
         // The pipe will be 2px wide and as high as needed to touch the ground at y = 11.
         const pipe = (x,y) => {
@@ -42,7 +42,7 @@
 
 
         const stair = (y, x, right) => {
-            for (Y = 11; Y > y; Y--) {
+            for (let Y = 11; Y > y; Y--) {
                 if (right) {
                     for (X = x; X < x + Y - y; X++) {
                         map[Y][X] = map[10][198] = 1;
@@ -69,11 +69,19 @@
                     map[~~y][~~x]--, vy = 0;
                 }
             return map[~~y][~~x];
-
             }
-
         }
 
+        // MAP
+        // ---
+        // Define a 211 * 15 grid with 10 lines of sky (i = 0) and 5 lines of ground (id = 1).
+        // The ground has 3 holes (id = 0) at coordinates x = 69 & 70, 86 & 87 & 88, 153 & 154.
+        for (let i = 14; i >= 0; i--) {
+            map[i] = [];
+            for (let j = 210; j >= 0; j--) {
+                map[i][j] = (i > 10 && ![69, 70, 86, 87, 88, 153, 154].includes(j));
+            }
+        }
         
     </script>
 </body>
