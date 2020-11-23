@@ -109,6 +109,19 @@
         stair(6, 140, 1);
         stair(6, 155, 1);
 
+        // Input 
+        // -----
+        // Every time a key is pressed (onkeydown) the corresponding flag is set to "w" (the 5th char of e.type = "keydown")
+        // Every time a key is released (onkeyup) it is set to "undefined" (the 5th character of e.type = "keyup")
+        // Those flags can be tested as if they were booleans because "w" is truthy and undefined is falsy
+        onkeydown = onkeyup = e => self['lur'[e.which - 137]] - e.type[5];
+        // self refers to window.self. It's just a property on the window object
+        // lur must stand for left, up, right
+        // The which property of the KeyboardEvent interface returns the numeric keycode of the keypressed. The code determines which key was pressed.
+        // keycodes for l = 76, u = 85, r = 82, subtracting with 137 will result in a negative number and ['lur'[e.which - 137]] will evaluate to false
+        // The type property of the Event returns a string containing the events type
+        // If the event is onkeyup e.type = "keyup" and e.type[5] = undefined (There is character at the 6th position in keyup, zero based counting, remember)
+
 
         
 
