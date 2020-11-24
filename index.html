@@ -4,29 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini Super Mario</title>
+    <style>
+        * { 
+            overflow: hidden
+        }
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+       canvas {
+           border: 1px solid coral;
+       }
+    </style>
 </head>
 <body>
     <canvas id="a"></canvas>
     <script>
-
         const canvas = document.getElementById("a");
-        const ctx = canvas.getContext("2d");
+        const c = canvas.getContext("2d");
+
+        top.reload = () => {
+            location = location;
+        }
 
         a.width = 15 * 9;
         a.height = 13 * 9;
 
-        const left = 0;
-        const up = 0;
-        const right = 0;
+        let l = 0;
+        let u = 0;
+        let r = 0;
 
         const map = [];
-        const scroll = 0;
+        let scroll = 0;
         let vy = 0;
-        const end = 0;
-        const zoom = 9;
+        let end = 0;
+        const n = 9;
         let x = 2;
         let y = 2;
-        const intro = 24;
+        let intro = 24;
         let enemy = 24;
         let grounded = 0;
 
@@ -114,16 +131,185 @@
         // Every time a key is pressed (onkeydown) the corresponding flag is set to "w" (the 5th char of e.type = "keydown")
         // Every time a key is released (onkeyup) it is set to "undefined" (the 5th character of e.type = "keyup")
         // Those flags can be tested as if they were booleans because "w" is truthy and undefined is falsy
-        onkeydown = onkeyup = e => self['lur'[e.which - 137]] - e.type[5];
-        // self refers to window.self. It's just a property on the window object
+        // onkeydown = onkeyup = e => self['lur'[e.which - 37]] = e.type[5];
+        // self refers to window.self.
         // lur must stand for left, up, right
         // The which property of the KeyboardEvent interface returns the numeric keycode of the keypressed. The code determines which key was pressed.
-        // keycodes for l = 76, u = 85, r = 82, subtracting with 137 will result in a negative number and ['lur'[e.which - 137]] will evaluate to false
+        // keycodes for l = 37, u = 38, r = 39, subtracting with 37 will result in 39, 48, 45 and ['lur'[e.which - 37]] will evaluate to undefined
         // The type property of the Event returns a string containing the events type
-        // If the event is onkeyup e.type = "keyup" and e.type[5] = undefined (There is character at the 6th position in keyup, zero based counting, remember)
+        // If the event is onkeyup e.type = "keyup" then e.type[5] = undefined (There is character at the 6th position in keyup, zero based counting, remember)
+        // If the event is onkeydown e.type = "keydown" then e.type[5] = "w"
 
+        document.addEventListener("keydown", (event) => {
+            console.log(event.which)
+            if (event.which === 37) l = 1;
+            if (event.which === 38) u = 1;
+            if (event.which === 39) r = 1;
+            console.log(r)
+        })
 
-        
+        // Game loop
+        // ---------
+        z = setInterval(
+
+        // The game is updated and the canvas is redrawn every 9ms:
+        e => {
+
+        // Move the enemy to the left.
+        enemy -= .02;
+
+        // If the distance between the enemy and Mario is smaller than 1px:
+        if(Math.hypot(enemy - x, 10 - y) < 1){
+
+            // If Mario is jumping, "kill" the enemy by moving it at x=-1px, out of the viewport.
+            if(grounded){
+            enemy = -1;
+            vy = -.2;
+            }
+
+            // If mario is grounded, game over.
+            else {
+            end = 1;
+            }
+        }
+
+        // Mario goes left if `l` is set and if his position on the map is larger than the map scroll.
+        if(l && x > scroll){
+            x -= .1;
+
+            // Stop Mario if he hits a solid block on the left.
+            // To stop Mario precisely against the wall, his x coordinate is floored and incremented (i.e. set to the block's x + 1).
+            if(collision(x, y)){
+            x = ~~x + 1;
+            }
+        }
+
+        // Mario goes right if `r` is set.
+        if(r){
+            x += .1;
+
+            // Stop Mario if he hits a solid block on the right.
+            // his x coordinate is set to the block's x - 1.1 (if it was just 1, it would continue to collide and cause bugs on the next frame).
+            if(collision(x + 1, y)){
+            x = ~~x - .1;
+            }
+
+            // Make the map scroll if Mario goes further than the current scroll value + 7px.
+            else if(x > scroll + 7){
+            scroll += .1;
+            }
+        }
+
+        // Mario jumps if `u` is set and if Mario is currently touching the ground.
+        // The jump is made by setting his vertical speed to -.25 pixels/frame.
+        if(u && !grounded){
+            vy = -.25;
+        }
+
+        // Add gravity (.012px/frame) to Mario's vertical speed and the vertical speed to the vertical position.
+        vy += .012;
+        y += vy;
+
+        // During a jump (if the vertical speed has been set to a negative value):
+        if(vy < 0){
+
+            // Add vertical speed to y position
+            y += vy;
+
+            // If a solid block is hit by Mario's top-left corner or top-right corner:
+            if(collision(x, y, 1) | collision(x + .9, y, 1)){
+
+            // Place Mario just below the solid block.
+            y = ~~y + 1;
+
+            // Cancel his vertical speed.
+            vy = 0;
+            }
+        }
+
+        // If Mario dies by falling in a hole, or wins by touching the flag, game over
+        if(y > 14 || x > 198) end = 1;
+
+        // Stop Mario's fall when his bottom-left corner or bottom-right corner touches a solid block.
+        // He is considered "grounded" and the "up" flag is unset to avoid jumping again immediately.
+        // Though, Mario will continue jumping as long as no other key is pressed because the onkeydown event will be fired continuously.
+        grounded = u = !(collision(x, y + 1) | collision(x + .5, y + 1));
+        if(!grounded) y = ~~y, vy = 0;
+
+        // Draw the scene:
+
+        // Sky
+        c.fillStyle = `#59f`;
+        c.fillRect(0, 0, 999, 999);
+
+        // Map
+        for(i = 13; i--;){
+            for(j = 999; j--;){
+
+            // This commented code would have drawn all the clouds in white if there were enough bytes left.
+            /*
+            if(j%48 == 9){
+                c.fillStyle=`#fff`;
+                c.fillRect(j*n-scroll*n,2*n,n,n);
+                c.fillRect((j+19)*n-scroll*n,2*n,3*n,n);
+                c.fillRect((j+11)*n-scroll*n,n,n,n);
+                c.fillRect((j+26)*n-scroll*n,n,2*n,n);
+            }
+            */
+
+            // Pipes
+            if(map[i][j] == 4){
+                c.fillStyle = `#8d1`;
+                c.fillRect(j * n - scroll * n, i * n, n, n);
+
+                // Reuse the pipes' color to draw the flag between the lines 2 and 11 at x = 198.
+                c.fillRect(198 * n + 2 - scroll * n, n, 2, 9 * n);
+            }
+
+            // Question blocks
+            else if(map[i][j] == 3){
+                c.fillStyle = `#f93`;
+                c.fillRect(j * n - scroll * n, i * n, n, n);
+            }
+
+            // Ground / brick / stairs
+            else if(map[i][j]){
+                c.fillStyle = `#c40`;
+                c.fillRect(j * n - scroll * n, i * n, n, n);
+            }
+            }
+        }
+
+        // Enemy
+        c.fillStyle = `#a00`;
+        c.fillRect(enemy * n - scroll * n, 10 * n, n, n);
+
+        // Mario
+        c.fillStyle = `#d20`;
+        c.fillRect(x * n - scroll * n, y * n, n, n);
+
+        // Reload the page after a game over (win / lose)
+        if(end){
+            top.reload();
+        }
+
+        // Draw a black screen during the intro (24 frames)
+        // (It also serves as a transition after a game over)
+        if(intro){
+            c.fillStyle = `#000`;
+            c.fillRect(0, 0, 999, 999);
+            intro--;
+        }
+        }, 9
+        )
+
+        // After minification, some manual optimizations were added:
+        // - l=u=r=0;var f=[],e=0,o=0,t=0,n=2,R=2,S=24,a=24 => f=[l=u=r=e=o=t=0],n=R=2,S=a=24
+        // - grounded => z
+        // - " => `
+        // - replace the function in setInterval with a string
+        // The minified size is 1507b.
+        // After RegPacking with the score 1/0/0 and the vars a and c ignored, the size is 1018b.
 
     </script>
 </body>
