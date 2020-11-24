@@ -146,6 +146,13 @@
             if (event.which === 39) r = 1;
         })
 
+        document.addEventListener("keyup", (event) => {
+            if (event.which === 37) l = 0;
+            if (event.which === 38) u = 0;
+            if (event.which === 39) r = 0;
+        })
+
+
         // Game loop
         // ---------
         z = setInterval(
