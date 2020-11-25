@@ -26,8 +26,10 @@
             location = location;
         }
 
-        a.width = 15 * 9;
-        a.height = 13 * 9;
+        const magnification = 11
+
+        a.width = 15 * magnification;
+        a.height = 13 * magnification;
 
         let left = 0;
         let up = 0;
@@ -37,7 +39,6 @@
         let scroll = 0;
         let vy = 0;
         let end = 0;
-        const n = 9;
         let x = 2;
         let y = 2;
         let intro = 24;
@@ -248,39 +249,39 @@
                 // Pipes
                 if(map[i][j] == 4){
                     c.fillStyle = `#8d1`;
-                    c.fillRect(j * n - scroll * n, i * n, n, n);
+                    c.fillRect(j * magnification - scroll * magnification, i * magnification, magnification, magnification);
 
                     // Reuse the pipes' color to draw the flag between the lines 2 and 11 at x = 198.
-                    c.fillRect(198 * n + 2 - scroll * n, n, 2, 9 * n);
+                    c.fillRect(198 * magnification + 2 - scroll * magnification, magnification, 2, 9 * magnification);
                 }
 
                 // Question blocks
                 else if(map[i][j] == 3){
                     c.fillStyle = `#f93`;
-                    c.fillRect(j * n - scroll * n, i * n, n, n);
+                    c.fillRect(j * magnification - scroll * magnification, i * magnification, magnification, magnification);
                 }
 
                 // Ground / brick / stairs
                 else if(map[i][j]){
                     c.fillStyle = `#c40`;
-                    c.fillRect(j * n - scroll * n, i * n, n, n);
+                    c.fillRect(j * magnification - scroll * magnification, i * magnification, magnification, magnification);
                     }   
                 }
             }
 
             // Enemy
             c.fillStyle = `#a00`;
-            c.fillRect(enemy * n - scroll * n, 10 * n, n, n);
+            c.fillRect(enemy * magnification - scroll * magnification, 10 * magnification, magnification, magnification);
 
             // Mario
             c.fillStyle = `#d20`;
-            c.fillRect(x * n - scroll * n, y * n, n, n);
+            c.fillRect(x * magnification - scroll * magnification, y * magnification, magnification, magnification);
 
             // Reload the page after a game over (win / lose)
             if(end){
                 top.reload();
-                end = 0;
                 clearInterval(z)
+                end = 0;
             }
 
             // Draw a black screen during the intro (24 frames)
