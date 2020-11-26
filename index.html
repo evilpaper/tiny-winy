@@ -55,7 +55,6 @@
             }
         }
 
-
         const stair = (y, x, right) => {
             for (let Y = 11; Y > y; Y--) {
                 if (right) {
@@ -70,9 +69,10 @@
             } 
         }
 
-        // This function detects and responds to collision between a corner of Mario's pixel and other locks of the map.
+        // Collision
+        // ---------
+        // This function detects and responds to collision between a corner of Mario's pixel and other blocks of the map.
         // The 'up' parameter is set if Mario is jumping and means that the collision that is being checked is between Mario's top and a block above him.
-
         const collision = (x, y, up) => {
 
             // ~~ is a double NOT bitwise operator. It is used as a faster substitute for Math.floor() for positive numbers.
