@@ -172,6 +172,10 @@
                 if(collision(x, y)){
                 x = ~~x + 1;
                 }
+
+                else if(x < scroll + 2) {
+                    scroll -= .1;
+                }
             }
 
             // Mario goes right if `r` is set.
@@ -186,7 +190,7 @@
 
                 // Make the map scroll if Mario goes further than the current scroll value + 7px.
                 else if(x > scroll + 7){
-                scroll += .1;
+                    scroll += .1;
                 }
             }
 
