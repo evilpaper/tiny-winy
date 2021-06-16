@@ -1,249 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mini Super Mario</title>
     <style>
-        * { 
-            overflow: hidden
-        }
-        body {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+      * {
+        overflow: hidden;
+      }
+      body {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <canvas id="a"></canvas>
     <script src="levels.js"></script>
     <script>
-        const canvas = document.getElementById("a");
-        const c = canvas.getContext("2d");
+      const canvas = document.getElementById("a");
+      const c = canvas.getContext("2d");
 
-        top.reload = () => {
-            location = location;
+      top.reload = () => {
+        location = location;
+      };
+
+      const magnification = 16;
+
+      a.width = 16 * magnification;
+      a.height = 16 * magnification;
+
+      let left = 0;
+      let up = 0;
+      let right = 0;
+
+      let map = [];
+      let scroll = 0;
+      let vy = 0;
+      let end = 0;
+      let x = 2;
+      let y = 2;
+      let intro = 24;
+      let enemy = 24;
+      let grounded = 0;
+
+      // Helpers
+      // -------
+      // This function adds a pipe (id = 4) on the map starting at the given top-left position.
+      // The pipe will be 2px wide and as high as needed to touch the ground at y = 11.
+      const pipe = (x, y) => {
+        for (let Y = 11; Y > y; Y--) {
+          map[Y][x] = map[Y][x + 1] = 4;
         }
+      };
 
-        const magnification = 11
-
-        a.width = 15 * magnification;
-        a.height = 13 * magnification;
-
-        let left = 0;
-        let up = 0;
-        let right = 0;
-
-        let map = [];
-        let scroll = 0;
-        let vy = 0;
-        let end = 0;
-        let x = 2;
-        let y = 2;
-        let intro = 24;
-        let enemy = 24;
-        let grounded = 0;
-
-        // Helpers
-        // -------
-        // This function adds a pipe (id = 4) on the map starting at the given top-left position.
-        // The pipe will be 2px wide and as high as needed to touch the ground at y = 11.
-        const pipe = (x,y) => {
-            for(let Y = 11; Y > y; Y--) {
-                map[Y][x] = map[Y][x+1] = 4;
+      const stair = (y, x, right) => {
+        for (let Y = 11; Y > y; Y--) {
+          if (right) {
+            for (X = x; X < x + Y - y; X++) {
+              map[Y][X] = map[10][198] = 1;
             }
+          } else {
+            for (X = x; X > x - Y + y; X--) {
+              map[Y][X] = map[10][198] = 1;
+            }
+          }
         }
+      };
 
-        const stair = (y, x, right) => {
-            for (let Y = 11; Y > y; Y--) {
-                if (right) {
-                    for (X = x; X < x + Y - y; X++) {
-                        map[Y][X] = map[10][198] = 1;
-                    }
-                } else {
-                    for (X = x; X > x - Y + y; X--) {
-                        map[Y][X] = map[10][198] = 1;
-                    }
-                }
-            } 
+      // Collision
+      // ---------
+      // This function detects and responds to collision between a corner of Mario's pixel and other blocks of the map.
+      // The 'up' parameter is set if Mario is jumping and means that the collision that is being checked is between Mario's top and a block above him.
+      const collision = (x, y, up) => {
+        // ~~ is a double NOT bitwise operator. It is used as a faster substitute for Math.floor() for positive numbers.
+        if (map[~~y]) {
+          // If the map actually has a line at the given Y coordinate.
+          // This must be checked because Mario can jump above and fall below the map.
+          if (up && map[~~y][~~x] && map[~~y][~~x] != 2) {
+            map[~~y][~~x]--, (vy = 0);
+          }
+          return map[~~y][~~x];
         }
+      };
 
-        // Collision
-        // ---------
-        // This function detects and responds to collision between a corner of Mario's pixel and other blocks of the map.
-        // The 'up' parameter is set if Mario is jumping and means that the collision that is being checked is between Mario's top and a block above him.
-        const collision = (x, y, up) => {
-
-            // ~~ is a double NOT bitwise operator. It is used as a faster substitute for Math.floor() for positive numbers.
-            if (map[~~y]) {
-
-                // If the map actually has a line at the given Y coordinate.
-                // This must be checked because Mario can jump above and fall below the map.
-                if (up && map[~~y][~~x] && map[~~y][~~x] != 2) {
-                    map[~~y][~~x]--, vy = 0;
-                }
-            return map[~~y][~~x];
-            }
+      // MAP
+      // ---
+      // Define a 211 * 15 grid with 10 lines of sky (i = 0) and 5 lines of ground (id = 1).
+      // The ground has 3 holes (id = 0) at coordinates x = 69 & 70, 86 & 87 & 88, 153 & 154.
+      for (let i = 14; i >= 0; i--) {
+        map[i] = [];
+        for (let j = 210; j >= 0; j--) {
+          map[i][j] = i > 10 && ![69, 70, 86, 87, 88, 153, 154].includes(j);
         }
+      }
 
-        // MAP
-        // ---
-        // Define a 211 * 15 grid with 10 lines of sky (i = 0) and 5 lines of ground (id = 1).
-        // The ground has 3 holes (id = 0) at coordinates x = 69 & 70, 86 & 87 & 88, 153 & 154.
-        for (let i = 14; i >= 0; i--) {
-            map[i] = [];
-            for (let j = 210; j >= 0; j--) {
-                map[i][j] = (i > 10 && ![69, 70, 86, 87, 88, 153, 154].includes(j));
+      // Set all the question blocks (id = 3) and brick blocks (id = 1) on the 4th and 8th lines.
+      for (i of [22, 94, 109, 129, 130]) map[3][i] = 3;
+      for (i of [
+        80, 81, 82, 83, 84, 85, 86, 87, 91, 92, 93, 121, 122, 123, 128, 131,
+      ])
+        map[3][i] = 1;
+      for (i of [8, 21, 23, 78, 106, 109, 112, 170]) map[7][i] = 3;
+      for (i of [20, 22, 24, 77, 79, 94, 100, 118, 129, 130, 88, 89, 171])
+        map[7][i] = map[10][198] = 1;
+
+      // Set all the pipes.
+      pipe(9, 28);
+      pipe(8, 38);
+      pipe(7, 46);
+      pipe(7, 57);
+      pipe(9, 83);
+      pipe(9, 179);
+
+      // Set all the stairs
+      // After the first stair, two pair of stairs have a 1px difference (x = 152 & 153, x = 190 & 191).
+      // This is because those those stairs have a 2px-wide platform on top.
+      // It was simpler to overlap two stairs than adding a column of pixels.
+      stair(6, 138);
+      stair(6, 152);
+      stair(6, 153);
+      stair(2, 190);
+      stair(2, 191);
+      stair(6, 140, 1);
+      stair(6, 155, 1);
+
+      map = LEVEL_ONE;
+
+      // Input
+      // -----
+      document.addEventListener("keydown", (event) => {
+        if (event.which === 37) left = 1;
+        if (event.which === 38) up = 1;
+        if (event.which === 39) right = 1;
+      });
+
+      document.addEventListener("keyup", (event) => {
+        if (event.which === 37) left = 0;
+        if (event.which === 38) up = 0;
+        if (event.which === 39) right = 0;
+      });
+
+      // Game loop
+      // ---------
+      z = setInterval(
+        // The game is updated and the canvas is redrawn every 9ms:
+        (e) => {
+          // Move the enemy to the left.
+          enemy -= 0.02;
+
+          // If the distance between the enemy and Mario is smaller than 1px:
+          if (Math.hypot(enemy - x, 10 - y) < 1) {
+            // If Mario is jumping, "kill" the enemy by moving it at x=-1px, out of the viewport.
+            if (grounded) {
+              enemy = -1;
+              vy = -0.2;
+            } else {
+              end = 1;
             }
-        }
+          }
 
-        // Set all the question blocks (id = 3) and brick blocks (id = 1) on the 4th and 8th lines.
-        for(i of[22,94,109,129,130]) map[3][i] = 3;
-        for(i of[80,81,82,83,84,85,86,87,91,92,93,121,122,123,128,131]) map[3][i] = 1;
-        for(i of[8,21,23,78,106,109,112,170]) map[7][i] = 3;
-        for(i of[20,22,24,77,79,94,100,118,129,130,88,89,171]) map[7][i] = map[10][198] = 1;
-        
-        // Set all the pipes.
-        pipe(9, 28);
-        pipe(8, 38);
-        pipe(7, 46);
-        pipe(7, 57);
-        pipe(9, 83);
-        pipe(9, 179);
+          // Mario goes left if `l` is set and if his position on the map is larger than the map scroll.
+          if (left && x > scroll) {
+            x -= 0.1;
 
-        // Set all the stairs
-        // After the first stair, two pair of stairs have a 1px difference (x = 152 & 153, x = 190 & 191).
-        // This is because those those stairs have a 2px-wide platform on top.
-        // It was simpler to overlap two stairs than adding a column of pixels.
-        stair(6, 138);
-        stair(6, 152);
-        stair(6, 153);
-        stair(2, 190);
-        stair(2, 191);
-        stair(6, 140, 1);
-        stair(6, 155, 1);
-
-        map = LEVEL_ONE;
-
-        // Input 
-        // -----
-        document.addEventListener("keydown", (event) => {
-            if (event.which === 37) left = 1;
-            if (event.which === 38) up = 1;
-            if (event.which === 39) right = 1;
-        })
-
-        document.addEventListener("keyup", (event) => {
-            if (event.which === 37) left = 0;
-            if (event.which === 38) up = 0;
-            if (event.which === 39) right = 0;
-        })
-
-        // Game loop
-        // ---------
-        z = setInterval(
-
-            // The game is updated and the canvas is redrawn every 9ms:
-            e => {
-
-            // Move the enemy to the left.
-            enemy -= .02;
-
-            // If the distance between the enemy and Mario is smaller than 1px:
-            if(Math.hypot(enemy - x, 10 - y) < 1){
-
-                // If Mario is jumping, "kill" the enemy by moving it at x=-1px, out of the viewport.
-                if (grounded){
-                    enemy = -1;
-                    vy = -.2;
-                } else {
-                    end = 1;
-                }
+            // Stop Mario if he hits a solid block on the left.
+            // To stop Mario precisely against the wall, his x coordinate is floored and incremented (i.e. set to the block's x + 1).
+            if (collision(x, y)) {
+              x = ~~x + 1;
+            } else if (x < scroll + 2) {
+              scroll -= 0.1;
             }
+          }
 
-            // Mario goes left if `l` is set and if his position on the map is larger than the map scroll.
-            if(left && x > scroll){
-                x -= .1;
+          // Mario goes right if `r` is set.
+          if (right) {
+            x += 0.1;
 
-                // Stop Mario if he hits a solid block on the left.
-                // To stop Mario precisely against the wall, his x coordinate is floored and incremented (i.e. set to the block's x + 1).
-                if(collision(x, y)){
-                x = ~~x + 1;
-                }
-
-                else if(x < scroll + 2) {
-                    scroll -= .1;
-                }
-            }
-
-            // Mario goes right if `r` is set.
-            if(right){
-                x += .1;
-
-                // Stop Mario if he hits a solid block on the right.
-                // his x coordinate is set to the block's x - 1.1 (if it was just 1, it would continue to collide and cause bugs on the next frame).
-                if(collision(x + 1, y)){
-                x = ~~x - .1;
-                }
-
-                // Make the map scroll if Mario goes further than the current scroll value + 7px.
-                else if(x > scroll + 7){
-                    scroll += .1;
-                }
+            // Stop Mario if he hits a solid block on the right.
+            // his x coordinate is set to the block's x - 1.1 (if it was just 1, it would continue to collide and cause bugs on the next frame).
+            if (collision(x + 1, y)) {
+              x = ~~x - 0.1;
             }
 
-            // Mario jumps if `u` is set and if Mario is currently touching the ground.
-            // The jump is made by setting his vertical speed to -.25 pixels/frame.
-            if(up && !grounded){
-                vy = -.25;
+            // Make the map scroll if Mario goes further than the current scroll value + 7px.
+            else if (x > scroll + 7) {
+              scroll += 0.1;
             }
+          }
 
-            // Add gravity (.012px/frame) to Mario's vertical speed and the vertical speed to the vertical position.
-            vy += .012;
+          // Mario jumps if `u` is set and if Mario is currently touching the ground.
+          // The jump is made by setting his vertical speed to -.25 pixels/frame.
+          if (up && !grounded) {
+            vy = -0.25;
+          }
+
+          // Add gravity (.012px/frame) to Mario's vertical speed and the vertical speed to the vertical position.
+          vy += 0.012;
+          y += vy;
+
+          // During a jump (if the vertical speed has been set to a negative value):
+          if (vy < 0) {
+            // Add vertical speed to y position
             y += vy;
 
-            // During a jump (if the vertical speed has been set to a negative value):
-            if(vy < 0){
+            // If a solid block is hit by Mario's top-left corner or top-right corner:
+            if (collision(x, y, 1) | collision(x + 0.9, y, 1)) {
+              // Place Mario just below the solid block.
+              y = ~~y + 1;
 
-                // Add vertical speed to y position
-                y += vy;
-
-                // If a solid block is hit by Mario's top-left corner or top-right corner:
-                if(collision(x, y, 1) | collision(x + .9, y, 1)){
-
-                // Place Mario just below the solid block.
-                y = ~~y + 1;
-
-                // Cancel his vertical speed.
-                vy = 0;
-                }
+              // Cancel his vertical speed.
+              vy = 0;
             }
+          }
 
-            // If Mario dies by falling in a hole, or wins by touching the flag, game over
-            if(y > 14 || x > 198) {
-                end = 1;
-            }
+          // If Mario dies by falling in a hole, or wins by touching the flag, game over
+          if (y > 16 || x > 198) {
+            end = 1;
+          }
 
-            // Stop Mario's fall when his bottom-left corner or bottom-right corner touches a solid block.
-            // He is considered "grounded" and the "up" flag is unset to avoid jumping again immediately.
-            // Though, Mario will continue jumping as long as no other key is pressed because the onkeydown event will be fired continuously.
-            grounded = up = !(collision(x, y + 1) | collision(x + .5, y + 1));
-            if(!grounded) y = ~~y, vy = 0;
+          // Stop Mario's fall when his bottom-left corner or bottom-right corner touches a solid block.
+          // He is considered "grounded" and the "up" flag is unset to avoid jumping again immediately.
+          // Though, Mario will continue jumping as long as no other key is pressed because the onkeydown event will be fired continuously.
+          grounded = up = !(collision(x, y + 1) | collision(x + 0.5, y + 1));
+          if (!grounded) (y = ~~y), (vy = 0);
 
-            // Draw the scene:
+          // Draw the scene:
 
-            // Sky
-            c.fillStyle = `#59f`;
-            c.fillRect(0, 0, 210, 210);
+          // Sky
+          c.fillStyle = `#59f`;
+          c.fillRect(0, 0, 210, 210);
 
-            // Map
-            for(i = 13; i--;){
-                for(j = 210; j--;){
-
-                // This commented code would have drawn all the clouds in white if there were enough bytes left.
-                /*
+          // Map
+          for (i = 16; i--; ) {
+            for (j = 210; j--; ) {
+              // This commented code would have drawn all the clouds in white if there were enough bytes left.
+              /*
                 if(j%48 == 9){
                     c.fillStyle=`#fff`;
                     c.fillRect(j*n-scroll*n,2*n,n,n);
@@ -253,53 +247,95 @@
                 }
                 */
 
-                // Pipes
-                if(map[i][j] == 4){
-                    c.fillStyle = `#8d1`;
-                    c.fillRect(j * magnification - scroll * magnification, i * magnification, magnification, magnification);
+              // Pipes
+              if (map[i][j] == 4) {
+                c.fillStyle = `#8d1`;
+                c.fillRect(
+                  j * magnification - scroll * magnification,
+                  i * magnification,
+                  magnification,
+                  magnification
+                );
 
-                    // Reuse the pipes' color to draw the flag between the lines 2 and 11 at x = 198.
-                    c.fillRect(198 * magnification + 2 - scroll * magnification, magnification, 2, 9 * magnification);
-                }
+                // Reuse the pipes color to draw the flag between the lines 2 and 11 at x = 198.
+                c.fillRect(
+                  198 * magnification + 2 - scroll * magnification,
+                  magnification,
+                  2,
+                  9 * magnification
+                );
+              }
 
-                // Question blocks
-                else if(map[i][j] == 3){
-                    c.fillStyle = `#f93`;
-                    c.fillRect(j * magnification - scroll * magnification, i * magnification, magnification, magnification);
-                }
+              // Question blocks
+              else if (map[i][j] == 3) {
+                c.fillStyle = `#f93`;
+                c.fillRect(
+                  j * magnification - scroll * magnification,
+                  i * magnification,
+                  magnification,
+                  magnification
+                );
+              }
 
-                // Ground / brick / stairs
-                else if(map[i][j]){
-                    c.fillStyle = `#c40`;
-                    c.fillRect(j * magnification - scroll * magnification, i * magnification, magnification, magnification);
-                    }   
-                }
+              // Sky
+              else if (map[i][j] == 0) {
+                c.fillStyle = `#59f`;
+                c.fillRect(
+                  j * magnification - scroll * magnification,
+                  i * magnification,
+                  magnification,
+                  magnification
+                );
+              }
+
+              // Ground / brick / stairs
+              else if (map[i][j] == 1) {
+                c.fillStyle = `#c40`;
+                c.fillRect(
+                  j * magnification - scroll * magnification,
+                  i * magnification,
+                  magnification,
+                  magnification
+                );
+              }
             }
+          }
 
-            // Enemy
-            c.fillStyle = `#a00`;
-            c.fillRect(enemy * magnification - scroll * magnification, 10 * magnification, magnification, magnification);
+          // Enemy
+          c.fillStyle = `#a00`;
+          c.fillRect(
+            enemy * magnification - scroll * magnification,
+            10 * magnification,
+            magnification,
+            magnification
+          );
 
-            // Mario
-            c.fillStyle = `#d20`;
-            c.fillRect(x * magnification - scroll * magnification, y * magnification, magnification, magnification);
+          // Mario
+          c.fillStyle = `#d20`;
+          c.fillRect(
+            x * magnification - scroll * magnification,
+            y * magnification,
+            magnification,
+            magnification
+          );
 
-            // Reload the page after a game over (win / lose)
-            if(end){
-                top.reload();
-                clearInterval(z)
-                end = 0;
-            }
+          // Reload the page after a game over (win / lose)
+          if (end) {
+            top.reload();
+            clearInterval(z);
+            end = 0;
+          }
 
-            // Draw a black screen during the intro (24 frames)
-            // (It also serves as a transition after a game over)
-            if(intro){
-                c.fillStyle = `#000`;
-                c.fillRect(0, 0, 999, 999);
-                intro--;
-                }
-            }, 9)
-
+          // Draw a black screen during the intro (24 frames)
+          // (It also serves as a transition after a game over)
+          if (intro) {
+            c.fillStyle = `#000`;
+            c.fillRect(0, 0, 999, 999);
+            intro--;
+          }
+        },
+        9
+      );
     </script>
-</body>
+  </body>
 </html>
